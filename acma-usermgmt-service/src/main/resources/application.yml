@@ -1,0 +1,10 @@
+spring: 
+ application: 
+   name: acma-usermgmt-service
+
+server:
+  port: ${APP_PORT:5051}
+  
+acma: 
+  iam: 
+    usersApi: ${PROTOCOL:http}://${IAM_USERS_API_HOST:localhost}:${IAM_USERS_API_PORT:8081}/admin/realms/${IAM_REALM:acma}/users
