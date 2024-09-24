@@ -4,6 +4,7 @@
 package com.acma.properties.outbound;
 
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -42,6 +44,9 @@ public class AcmaUsersOutboundApi {
 
 	@Value("${acma.iam.usersApi}")
 	private String acma_users_api_url;
+	
+	@Value("${acma.iam.groups.property-owners}")
+	private String propertyOwnersGroupId;
 
 	public AcmaUsersOutboundApi(RestTemplate restTemplate, ObjectMapper objectMapper) {
 		this.restTemplate = restTemplate;
@@ -120,20 +125,60 @@ public class AcmaUsersOutboundApi {
 		
 	    HttpEntity requestBody = new HttpEntity<>(user,headersMap);
 	    
-	    ResponseEntity<?> responseEntity = restTemplate.postForEntity(acma_users_api_url, requestBody, null);
-	    log.info("API Response Code is {}", responseEntity.getStatusCode().value());
-		if (HttpStatus.CREATED.value() == responseEntity.getStatusCode().value()) {
-			HttpHeaders responseHeaders = responseEntity.getHeaders();
-			if(responseHeaders.containsKey("Location")){
-				String locHeaderVal = responseHeaders.getFirst("Location");
-				log.info("location header value is "+locHeaderVal);
-				locHeaderVal =  locHeaderVal.replace(acma_users_api_url+"/", "");
-				log.info("User Id From location header is "+locHeaderVal);
+	    try {
+	    	ResponseEntity<?> responseEntity = restTemplate.postForEntity(acma_users_api_url, requestBody, null);
+		    log.info("API Response Code is {}", responseEntity.getStatusCode().value());
+			if (HttpStatus.CREATED.value() == responseEntity.getStatusCode().value()) {
+				HttpHeaders responseHeaders = responseEntity.getHeaders();
+				if(responseHeaders.containsKey("Location")){
+					String locHeaderVal = responseHeaders.getFirst("Location");
+					log.info("location header value is "+locHeaderVal);
+					String userId =  locHeaderVal.replace(acma_users_api_url+"/", "");
+					log.info("User Id From location header is "+userId);
+					String groupId = null;
+					if(!StringUtils.hasLength(user.getGroupId())) {
+						log.info("Property Owners Group Id is {}", groupId);
+						groupId = propertyOwnersGroupId;
+					}else {
+						log.info("Others Group Id is {}", groupId);
+						groupId = user.getGroupId();
+					}
+					boolean isGroupProvisioned = provisionUserUnderAGroup(userId,groupId,accessToken);
+					if(isGroupProvisioned) {
+						user.setUserId(userId);
+						user.setGroupId(groupId);
+						
+					}else {
+						//delete the user
+					}
+				}
+			}else {
+				throw new RuntimeException("something went wrong while user is creating");
 			}
-		}    
-		
-	    
-		return null;
+	    }catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return user;
 	}
 
+
+	private boolean provisionUserUnderAGroup(String userId, String groupId, String accessToken) {
+		boolean groupProvisioned = false;
+		String provisioningApi = acma_users_api_url+"/"+userId+"/groups/"+groupId;
+		log.info("User Provisioning:: API is {}", provisioningApi);
+		
+		MultiValueMap<String, String> headersMap = new LinkedMultiValueMap<>();
+		headersMap.add("Authorization", "Bearer "+accessToken);
+		
+		HttpEntity request = new HttpEntity<>(headersMap);
+		 Map<String, String> param = new HashMap<String, String>();
+		 
+		 ResponseEntity responseEntity = restTemplate.exchange(provisioningApi, HttpMethod.PUT, request, ResponseEntity.class,param);
+		 log.info("User Provisioning:: Response Code is {}", responseEntity.getStatusCode().value());
+		 if(HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
+			 groupProvisioned = true; 
+		 }
+		return groupProvisioned;
+		
+	}
 }
