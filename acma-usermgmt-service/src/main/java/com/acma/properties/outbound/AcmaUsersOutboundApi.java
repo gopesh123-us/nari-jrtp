@@ -40,17 +40,17 @@ public class AcmaUsersOutboundApi {
 
 	private RestTemplate restTemplate;
 
-	private ObjectMapper objectMapper;
-
 	@Value("${acma.iam.usersApi}")
 	private String acma_users_api_url;
+	
+	@Value("${acma.iam.groupsApi}")
+	private String acma_groups_api_url;
 	
 	@Value("${acma.iam.groups.property-owners}")
 	private String propertyOwnersGroupId;
 
-	public AcmaUsersOutboundApi(RestTemplate restTemplate, ObjectMapper objectMapper) {
+	public AcmaUsersOutboundApi(RestTemplate restTemplate) {
 		this.restTemplate = restTemplate;
-		this.objectMapper = objectMapper;
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class AcmaUsersOutboundApi {
 	 * @throws JsonMappingException
 	 * @throws JsonProcessingException
 	 */
-	public List<Users> getAllPropertyOwners(String accessToken)
+	public List<Users> getAllUser(String accessToken)
 			throws RestClientException, URISyntaxException, JsonMappingException, JsonProcessingException {
 		log.info("IAM Users API {}", acma_users_api_url);
 
@@ -103,6 +103,41 @@ public class AcmaUsersOutboundApi {
 			
 			
 			
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+	
+	/**
+	 * Returns all the property owners
+ 	 * @param accessToken
+	 * @return
+	 * @throws RestClientException
+	 * @throws URISyntaxException
+	 * @throws JsonMappingException
+	 * @throws JsonProcessingException
+	 */
+	public List<Users> getAllUsersOfAGroup(String groupId,String accessToken)
+			throws RestClientException, URISyntaxException, JsonMappingException, JsonProcessingException {
+		log.info("getAllPropertyOwners {}", acma_groups_api_url);
+		acma_groups_api_url = acma_groups_api_url+"/"+groupId+"/members";
+		log.info("acma_groups_api_url {}", acma_groups_api_url);
+		
+		MultiValueMap<String, String> headersMap = new LinkedMultiValueMap<>();
+		headersMap.add("Authorization", "bearer " + accessToken);
+
+		HttpEntity<String> entity = new HttpEntity<>(headersMap);
+		try {
+			ResponseEntity<?> responseEntity = restTemplate.exchange(acma_groups_api_url, HttpMethod.GET, entity, Object.class);
+			log.info("API Response Code is {}", responseEntity.getStatusCode().value());
+			if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
+				List<Users> usersListResp = (List<Users>) responseEntity.getBody();
+				log.info("Count of the Users {}", usersListResp.size());
+				return usersListResp;
+			} else {
+				throw new RuntimeException("HttpStatusCode " + responseEntity.getStatusCode().value());
+			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -162,7 +197,7 @@ public class AcmaUsersOutboundApi {
 	}
 
 
-	private boolean provisionUserUnderAGroup(String userId, String groupId, String accessToken) {
+	public boolean provisionUserUnderAGroup(String userId, String groupId, String accessToken) {
 		boolean groupProvisioned = false;
 		String provisioningApi = acma_users_api_url+"/"+userId+"/groups/"+groupId;
 		log.info("User Provisioning:: API is {}", provisioningApi);
@@ -179,6 +214,30 @@ public class AcmaUsersOutboundApi {
 			 groupProvisioned = true; 
 		 }
 		return groupProvisioned;
+		
+	}
+	
+	public boolean DeProvisionUserUnderAGroup(String userId, String groupId, String accessToken) {
+		boolean groupDeProvisioned = false;
+		
+		log.info("User DeProvisioning:: User Id is {}", userId);
+		log.info("User DeProvisioning:: Group Id is {}", groupId);
+		
+		String provisioningApi = acma_users_api_url+"/"+userId+"/groups/"+groupId;
+		log.info("User Provisioning:: API is {}", provisioningApi);
+		
+		MultiValueMap<String, String> headersMap = new LinkedMultiValueMap<>();
+		headersMap.add("Authorization", "Bearer "+accessToken);
+		
+		HttpEntity request = new HttpEntity<>(headersMap);
+		Map<String, String> param = new HashMap<String, String>();
+		 
+		 ResponseEntity responseEntity = restTemplate.exchange(provisioningApi, HttpMethod.DELETE, request, ResponseEntity.class,param);
+		 log.info("User Provisioning:: Response Code is {}", responseEntity.getStatusCode().value());
+		 if(HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
+			 groupDeProvisioned = true; 
+		 }
+		return groupDeProvisioned;
 		
 	}
 }
