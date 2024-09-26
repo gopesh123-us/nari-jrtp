@@ -1,14 +1,9 @@
 package com.acma.properties;
-
 import static org.assertj.core.api.Assertions.*;
-
 import java.net.URISyntaxException;
-import java.util.Date;
 import java.util.List;
-
 import org.assertj.core.util.DateUtil;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -46,7 +41,7 @@ class AcmaUsermgmtServiceApplicationTests {
 				.email("Narsi092401@yopmail.com")
 				.username("Narsi092401")
 				.build();
-		accessToken = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ5cHFuM2lZR0xDV1pKcl8yUlVpZmlqcEVzZWF3MUJBeHd5SnpqSk5neHFzIn0.eyJleHAiOjE3MjcyMzM1NjYsImlhdCI6MTcyNzIzMjA2NiwianRpIjoiMzFjY2MwNTQtMTUyOS00OTkwLWJmNzAtNTRhNmRlZmM5ZWI2IiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL3JlYWxtcy9hY21hIiwiYXVkIjpbInJlYWxtLW1hbmFnZW1lbnQiLCJhY2NvdW50Il0sInN1YiI6ImZlZjQxMzA5LTk4MWMtNDY1MS1hMDRjLTIxN2VlNjI5N2ZmZCIsInR5cCI6IkJlYXJlciIsImF6cCI6InN0YXRlZm9ybS1zdmMiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIi8qIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLWFjbWEiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsicmVhbG0tbWFuYWdlbWVudCI6eyJyb2xlcyI6WyJtYW5hZ2UtdXNlcnMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiY2xpZW50SG9zdCI6IjE3Mi4xOC4wLjEiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzZXJ2aWNlLWFjY291bnQtc3RhdGVmb3JtLXN2YyIsImNsaWVudEFkZHJlc3MiOiIxNzIuMTguMC4xIiwiY2xpZW50X2lkIjoic3RhdGVmb3JtLXN2YyJ9.lO7PgfKLFDlyTYnkvMRwKMM4z-IK6E11ZyWcllA7FrKmRzlJz90mHj_mvMVeIBTznzEQZHzxlKe9ym2tV35bEYXZ8owIGNF91TIjbfdkS6TQ-m8y_iOAocjNyKq3rJLwbsiklTUIZCWouwVWBdWdC48Htk_hxQpvDGQlmVwj6ZJFQ5SnBeS8Q2f3HGEOHUUFaOAhb6gW11E6lOR1mdJSnIb6iKEfFL7uNVYJOt9yNmpxiJjaVhE8h4Y7y-ajBR3kZUR7Zsexx4m21igiVIJEkPz-_ifJNZ8XJcLick-o8cjWfYIQNRboMo0OkwbqvqoaNWlLO5b5i4vFJPgPbHOdEQ";
+		accessToken = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJWbVcybUpIN3BjbzJWZVl3Zk50OEtENWhicFFyZ0FDY2dzUW95V3FXZnpVIn0.eyJleHAiOjE3MjcyOTAxMDQsImlhdCI6MTcyNzI4OTgwNCwianRpIjoiYzE0ZWI3NGQtOWVmOC00ZGMwLThlN2UtMDA0MzU4OGJjYzNlIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgxL3JlYWxtcy9hY21hIiwiYXVkIjpbInJlYWxtLW1hbmFnZW1lbnQiLCJhY2NvdW50Il0sInN1YiI6ImM0NTAxNGFmLTliZjktNDcwNi05MWE2LTFkZGI1YWFlMzY1ZCIsInR5cCI6IkJlYXJlciIsImF6cCI6InN0YXRlZm9ybS1zdmMiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIi8qIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJkZWZhdWx0LXJvbGVzLWFjbWEiLCJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsicmVhbG0tbWFuYWdlbWVudCI6eyJyb2xlcyI6WyJtYW5hZ2UtdXNlcnMiXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsImNsaWVudEhvc3QiOiIxNzIuMTguMC4xIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJzZXJ2aWNlLWFjY291bnQtc3RhdGVmb3JtLXN2YyIsImNsaWVudEFkZHJlc3MiOiIxNzIuMTguMC4xIiwiY2xpZW50X2lkIjoic3RhdGVmb3JtLXN2YyJ9.hq4T8Q1-unSLxiNY3QbjMZmF_P3t0pHQ8n4r8au3AaB8JgR4D9cetV2xGUQbqM2AD5YsaKFooiYaLLVNWP6nqXpx2pggLxglQz2lX2FojLxEM8uKFW00yapNmM-49cg8qWrFEtu-xq2TFztEUeJkSE6Dc943JCh2wd424baw8WnpygTlzbL-GH3KyujNUAgASO-mfDv0fZhR4jHl78XUKp4OVUbo7G0mGp0PvNMaN4bxZUyTDo58eiV-9p22uqBhn_7IVELSUQ_4cb6doiZCUBcLHv_rkGVZgwX1-MDOIhlTmwK40_ottelwkwuKQDAODCaxZoftmDzt8UanWodFLg";
 		propertyOwnersGroupId= "f955f066-2a7b-4058-bf7f-9b48b43b38b5";
 		acmaBrokersGroupId = "c307af52-8088-4686-a00a-5f4849dbbbf9";
 		acmaAgentsGroupId = "f3ae4ba0-b8a8-4d70-8f0f-a8cdde4939cf";
@@ -56,14 +51,13 @@ class AcmaUsermgmtServiceApplicationTests {
 	@Autowired
 	private AcmaUsersOutboundApi usersAPI;
 	
-	//@Test
-	
+	@Test
 	public void testGetAllUsers() throws RestClientException, URISyntaxException, JsonMappingException, JsonProcessingException {
 		usersAPI.getAllUser(accessToken);
 	}
 	
 	@Test
-	@Order(1)
+	@Order(value = 1)
 	public void testPropertyOwner() {
 		String userName = newUser.getUsername();
 		String email = newUser.getEmail();
@@ -80,7 +74,7 @@ class AcmaUsermgmtServiceApplicationTests {
 	}
 	
 	@Test
-	@Order(2)
+	@Order(value = 2)
 	public void testCreateBrokerUsers() {
 		String userName = newUser.getUsername();
 		String email = newUser.getEmail();
@@ -98,7 +92,7 @@ class AcmaUsermgmtServiceApplicationTests {
 	}
 	
 	@Test
-	@Order(3)
+	@Order(value = 3)
 	public void testCreateAgentUsers() {
 		
 		String userName = newUser.getUsername();
@@ -125,7 +119,7 @@ class AcmaUsermgmtServiceApplicationTests {
 	}
 	
 	@Test
-	@Order(4)
+	@Order(value = 4)
 	public void testGetAllPropertyOwners() throws JsonMappingException, RestClientException, JsonProcessingException, URISyntaxException {
 		List<Users> propOwnersList =  usersAPI.getAllUsersOfAGroup(propertyOwnersGroupId,accessToken);
 		assertThat(propOwnersList);
@@ -134,7 +128,7 @@ class AcmaUsermgmtServiceApplicationTests {
 	}
 	
 	@Test
-	@Order(5)
+	@Order(value = 5)
 	public void testGetAllAgents() throws JsonMappingException, RestClientException, JsonProcessingException, URISyntaxException {
 		List<Users> agentsList =  usersAPI.getAllUsersOfAGroup(acmaAgentsGroupId,accessToken);
 		assertThat(agentsList);
@@ -143,7 +137,7 @@ class AcmaUsermgmtServiceApplicationTests {
 	}
 	
 	@Test
-	@Order(6)
+	@Order(value = 6)
 	public void testGetAllBrokerUsers() throws JsonMappingException, RestClientException, JsonProcessingException, URISyntaxException {
 		List<Users> brokersList =  usersAPI.getAllUsersOfAGroup(acmaBrokersGroupId,accessToken);
 		assertThat(brokersList);
