@@ -7,25 +7,22 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.acma.properties.outboundutils.AcmaOutboundUtils;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.acma.properties.models.Users;
+import com.acma.properties.outboundutils.AcmaOutboundUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -119,14 +116,14 @@ public class AcmaUsersOutboundApi {
 	public List<Users> getAllUsersOfAGroup(String groupId,String accessToken)
 			throws RestClientException, URISyntaxException, JsonMappingException, JsonProcessingException {
 		log.info("getAllPropertyOwners {}", acma_groups_api_url);
-		acma_groups_api_url = acma_groups_api_url+"/"+groupId+"/members";
-		log.info("acma_groups_api_url {}", acma_groups_api_url);
+		String acmaUsersApi = acma_groups_api_url+"/"+groupId+"/members";
+		log.info("acmaUsersApi {}", acmaUsersApi);
 
 
 
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
 		try {
-			ResponseEntity<?> responseEntity = restTemplate.exchange(acma_groups_api_url, HttpMethod.GET, httpEntity, Object.class);
+			ResponseEntity<?> responseEntity = restTemplate.exchange(acmaUsersApi, HttpMethod.GET, httpEntity, Object.class);
 			log.info("API Response Code is {}", responseEntity.getStatusCode().value());
 			if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
 				List<Users> usersListResp = (List<Users>) responseEntity.getBody();
@@ -199,11 +196,19 @@ public class AcmaUsersOutboundApi {
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
 		 Map<String, String> param = new HashMap<String, String>();
 		 
-		 ResponseEntity responseEntity = restTemplate.exchange(provisioningApi, HttpMethod.PUT, httpEntity, ResponseEntity.class,param);
-		 log.info("User Provisioning:: Response Code is {}", responseEntity.getStatusCode().value());
-		 if(HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
-			 groupProvisioned = true; 
-		 }
+		 try {
+			 ResponseEntity responseEntity = restTemplate.exchange(provisioningApi, HttpMethod.PUT, httpEntity, ResponseEntity.class,param);
+			 log.info("User Provisioning:: Response Code is {}", responseEntity.getStatusCode().value());
+			 if(HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
+				 groupProvisioned = true; 
+			 }else {
+				 throw new RuntimeException("Something went wrong while provisioining the user");
+			 }
+		 }catch (Exception e) {
+			 throw new RuntimeException(e);
+		}
+		 
+		
 		return groupProvisioned;
 		
 	}
@@ -219,12 +224,18 @@ public class AcmaUsersOutboundApi {
 		
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
 		Map<String, String> param = new HashMap<String, String>();
+		 try {
+			 ResponseEntity responseEntity = restTemplate.exchange(provisioningApi, HttpMethod.DELETE, httpEntity, ResponseEntity.class,param);
+			 log.info("User Provisioning:: Response Code is {}", responseEntity.getStatusCode().value());
+			 if(HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
+				 groupDeProvisioned = true; 
+			 }else {
+				 throw new RuntimeException("Something went wrong wile user is deprovisioing");
+			 }
+		 }catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 		 
-		 ResponseEntity responseEntity = restTemplate.exchange(provisioningApi, HttpMethod.DELETE, httpEntity, ResponseEntity.class,param);
-		 log.info("User Provisioning:: Response Code is {}", responseEntity.getStatusCode().value());
-		 if(HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
-			 groupDeProvisioned = true; 
-		 }
 		return groupDeProvisioned;
 		
 	}
