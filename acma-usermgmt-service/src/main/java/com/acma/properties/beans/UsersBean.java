@@ -14,6 +14,7 @@ import lombok.Setter;
  */
 @Setter
 @Getter
+@Builder
 public class UsersBean implements Serializable {
 
 	/**

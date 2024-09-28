@@ -39,10 +39,10 @@ public class AcmaUsersOutboundApi {
 
 	@Value("${acma.iam.usersApi}")
 	private String acma_users_api_url;
-	
+
 	@Value("${acma.iam.groupsApi}")
 	private String acma_groups_api_url;
-	
+
 	@Value("${acma.iam.groups.property-owners}")
 	private String propertyOwnersGroupId;
 
@@ -52,7 +52,8 @@ public class AcmaUsersOutboundApi {
 
 	/**
 	 * Returns all the property owners
- 	 * @param accessToken
+	 * 
+	 * @param accessToken
 	 * @return
 	 * @throws RestClientException
 	 * @throws URISyntaxException
@@ -63,10 +64,9 @@ public class AcmaUsersOutboundApi {
 			throws RestClientException, URISyntaxException, JsonMappingException, JsonProcessingException {
 		log.info("IAM Users API {}", acma_users_api_url);
 
-
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
 
-        try {
+		try {
 			long start = System.currentTimeMillis();
 //			ResponseEntity<List<Users>> responseEntity = restTemplate.exchange(acma_users_api_url, HttpMethod.GET,
 //					entity, new ParameterizedTypeReference<List<Users>>() {
@@ -82,48 +82,46 @@ public class AcmaUsersOutboundApi {
 //			} else {
 //				throw new RuntimeException("HttpStatusCode " + responseEntity.getStatusCode().value());
 //			}
-			 
-			
-			ResponseEntity<?> responseEntity = restTemplate.exchange(acma_users_api_url, HttpMethod.GET, httpEntity, Object.class);
+
+			ResponseEntity<?> responseEntity = restTemplate.exchange(acma_users_api_url, HttpMethod.GET, httpEntity,
+					Object.class);
 			log.info("API Response Code is {}", responseEntity.getStatusCode().value());
 			if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
 				List<Users> usersListResp = (List<Users>) responseEntity.getBody();
 				log.info("Count of the Users {}", usersListResp.size());
 				long end = System.currentTimeMillis();
-				log.info("Total Time taken in millis is "+(end-start));
+				log.info("Total Time taken in millis is " + (end - start));
 				return usersListResp;
 			} else {
 				throw new RuntimeException("HttpStatusCode " + responseEntity.getStatusCode().value());
 			}
-			
-			
-			
+
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 
 	}
-	
+
 	/**
 	 * Returns all the property owners
- 	 * @param accessToken
+	 * 
+	 * @param accessToken
 	 * @return
 	 * @throws RestClientException
 	 * @throws URISyntaxException
 	 * @throws JsonMappingException
 	 * @throws JsonProcessingException
 	 */
-	public List<Users> getAllUsersOfAGroup(String groupId,String accessToken)
+	public List<Users> getAllUsersOfAGroup(String groupId, String accessToken)
 			throws RestClientException, URISyntaxException, JsonMappingException, JsonProcessingException {
 		log.info("getAllPropertyOwners {}", acma_groups_api_url);
-		String acmaUsersApi = acma_groups_api_url+"/"+groupId+"/members";
+		String acmaUsersApi = acma_groups_api_url + "/" + groupId + "/members";
 		log.info("acmaUsersApi {}", acmaUsersApi);
-
-
 
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
 		try {
-			ResponseEntity<?> responseEntity = restTemplate.exchange(acmaUsersApi, HttpMethod.GET, httpEntity, Object.class);
+			ResponseEntity<?> responseEntity = restTemplate.exchange(acmaUsersApi, HttpMethod.GET, httpEntity,
+					Object.class);
 			log.info("API Response Code is {}", responseEntity.getStatusCode().value());
 			if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
 				List<Users> usersListResp = (List<Users>) responseEntity.getBody();
@@ -149,96 +147,142 @@ public class AcmaUsersOutboundApi {
 	public Users createUser(Users user, String accessToken) {
 
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(user, accessToken);
-	    
-	    try {
-	    	ResponseEntity<?> responseEntity = restTemplate.postForEntity(acma_users_api_url, httpEntity, null);
-		    log.info("API Response Code is {}", responseEntity.getStatusCode().value());
+
+		try {
+			ResponseEntity<?> responseEntity = restTemplate.postForEntity(acma_users_api_url, httpEntity, null);
+			log.info("API Response Code is {}", responseEntity.getStatusCode().value());
 			if (HttpStatus.CREATED.value() == responseEntity.getStatusCode().value()) {
 				HttpHeaders responseHeaders = responseEntity.getHeaders();
-				if(responseHeaders.containsKey("Location")){
+				if (responseHeaders.containsKey("Location")) {
 					String locHeaderVal = responseHeaders.getFirst("Location");
-					log.info("location header value is "+locHeaderVal);
-					String userId =  locHeaderVal.replace(acma_users_api_url+"/", "");
-					log.info("User Id From location header is "+userId);
+					log.info("location header value is " + locHeaderVal);
+					String userId = locHeaderVal.replace(acma_users_api_url + "/", "");
+					log.info("User Id From location header is " + userId);
 					String groupId = null;
-					if(!StringUtils.hasLength(user.getGroupId())) {
+					if (!StringUtils.hasLength(user.getGroupId())) {
 						log.info("Property Owners Group Id is {}", groupId);
 						groupId = propertyOwnersGroupId;
-					}else {
+					} else {
 						log.info("Others Group Id is {}", groupId);
 						groupId = user.getGroupId();
 					}
-					boolean isGroupProvisioned = provisionUserUnderAGroup(userId,groupId,accessToken);
-					if(isGroupProvisioned) {
+					// provisioning the user to a particular group
+					boolean isGroupProvisioned = provisionUserUnderAGroup(userId, groupId, accessToken);
+					if (isGroupProvisioned) {
 						user.setUserId(userId);
 						user.setGroupId(groupId);
-						
-					}else {
-						//delete the user
+
+					} else {
+						// delete the user
 					}
 				}
-			}else {
+			} else {
 				throw new RuntimeException("something went wrong while user is creating");
 			}
-	    }catch (Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		return user;
 	}
 
-
 	public boolean provisionUserUnderAGroup(String userId, String groupId, String accessToken) {
 		boolean groupProvisioned = false;
-		String provisioningApi = acma_users_api_url+"/"+userId+"/groups/"+groupId;
+		String provisioningApi = acma_users_api_url + "/" + userId + "/groups/" + groupId;
 		log.info("User Provisioning:: API is {}", provisioningApi);
-		
 
-		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
-		 Map<String, String> param = new HashMap<String, String>();
-		 
-		 try {
-			 ResponseEntity responseEntity = restTemplate.exchange(provisioningApi, HttpMethod.PUT, httpEntity, ResponseEntity.class,param);
-			 log.info("User Provisioning:: Response Code is {}", responseEntity.getStatusCode().value());
-			 if(HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
-				 groupProvisioned = true; 
-			 }else {
-				 throw new RuntimeException("Something went wrong while provisioining the user");
-			 }
-		 }catch (Exception e) {
-			 throw new RuntimeException(e);
-		}
-		 
-		
-		return groupProvisioned;
-		
-	}
-	
-	public boolean DeProvisionUserUnderAGroup(String userId, String groupId, String accessToken) {
-		boolean groupDeProvisioned = false;
-		
-		log.info("User DeProvisioning:: User Id is {}", userId);
-		log.info("User DeProvisioning:: Group Id is {}", groupId);
-		
-		String provisioningApi = acma_users_api_url+"/"+userId+"/groups/"+groupId;
-		log.info("User Provisioning:: API is {}", provisioningApi);
-		
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
 		Map<String, String> param = new HashMap<String, String>();
-		 try {
-			 ResponseEntity responseEntity = restTemplate.exchange(provisioningApi, HttpMethod.DELETE, httpEntity, ResponseEntity.class,param);
-			 log.info("User Provisioning:: Response Code is {}", responseEntity.getStatusCode().value());
-			 if(HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
-				 groupDeProvisioned = true; 
-			 }else {
-				 throw new RuntimeException("Something went wrong wile user is deprovisioing");
-			 }
-		 }catch (Exception e) {
+
+		try {
+			ResponseEntity responseEntity = restTemplate.exchange(provisioningApi, HttpMethod.PUT, httpEntity,
+					ResponseEntity.class, param);
+			log.info("User Provisioning:: Response Code is {}", responseEntity.getStatusCode().value());
+			if (HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
+				groupProvisioned = true;
+			} else {
+				throw new RuntimeException("Something went wrong while provisioining the user");
+			}
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		 
-		return groupDeProvisioned;
-		
+
+		return groupProvisioned;
+
 	}
 
+	public boolean DeProvisionUserUnderAGroup(String userId, String groupId, String accessToken) {
+		boolean groupDeProvisioned = false;
+
+		log.info("User DeProvisioning:: User Id is {}", userId);
+		log.info("User DeProvisioning:: Group Id is {}", groupId);
+
+		String provisioningApi = acma_users_api_url + "/" + userId + "/groups/" + groupId;
+		log.info("User Provisioning:: API is {}", provisioningApi);
+
+		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
+		Map<String, String> param = new HashMap<String, String>();
+		try {
+			ResponseEntity responseEntity = restTemplate.exchange(provisioningApi, HttpMethod.DELETE, httpEntity,
+					ResponseEntity.class, param);
+			log.info("User Provisioning:: Response Code is {}", responseEntity.getStatusCode().value());
+			if (HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
+				groupDeProvisioned = true;
+			} else {
+				throw new RuntimeException("Something went wrong wile user is deprovisioing");
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+		return groupDeProvisioned;
+
+	}
+
+	public Users getUserByUserId(String userId, String accessToken) {
+
+		log.info("getUserByUserId:: User Id is {}", userId);
+
+		String usersApi = acma_users_api_url + "/users/" + userId;
+		log.info("getUserByUserId:: API is {}", usersApi);
+
+		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
+		Map<String, String> param = new HashMap<String, String>();
+		try {
+			ResponseEntity<Users> responseEntity = restTemplate.exchange(usersApi, HttpMethod.GET, httpEntity,
+					Users.class);
+			log.info("getUserByUserId:: Response Code is {}", responseEntity.getStatusCode().value());
+			if (HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
+				return responseEntity.getBody();
+			} else {
+				throw new RuntimeException("Something went wrong wile user is deprovisioing");
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public boolean deleteUserByUserId(String userId, String accessToken) {
+		boolean isUserHardDelete = false;
+		log.info("deleteUserByUserId:: User Id is {}", userId);
+
+		String usersApi = acma_users_api_url + "/users/" + userId;
+		log.info("deleteUserByUserId:: API is {}", usersApi);
+
+		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
+		Map<String, String> param = new HashMap<String, String>();
+		try {
+			ResponseEntity responseEntity = restTemplate.exchange(usersApi, HttpMethod.DELETE, httpEntity,
+					ResponseEntity.class);
+			log.info("deleteUserByUserId:: Response Code is {}", responseEntity.getStatusCode().value());
+			if (HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
+				isUserHardDelete = true;
+			} else {
+				throw new RuntimeException("Something went wrong wile user is deprovisioing");
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return isUserHardDelete;
+	}
 
 }
