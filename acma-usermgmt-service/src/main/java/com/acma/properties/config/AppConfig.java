@@ -31,7 +31,7 @@ public class AppConfig {
 		 * that are missing a name token, the Loose matching strategy will match properties so long as the 
 		 * last destination property name in the hierarchy is matched.
 		 */
-		modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);
+		//modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.LOOSE);
 		return modelMapper;
 	}
 }

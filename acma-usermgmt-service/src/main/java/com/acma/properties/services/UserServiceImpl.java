@@ -38,6 +38,7 @@ public class UserServiceImpl implements UsersService {
 
 	@Override
 	public UsersBean createUser(UsersBean usersBean, String accessToken) {
+		log.info("Request Data is ,{}",usersBean.toString());
 		Users users = modelMapper.map(usersBean, Users.class);
 		log.info("Users are: " + users.toString());
 
@@ -51,6 +52,7 @@ public class UserServiceImpl implements UsersService {
 		try {
 			List<Users> usersList = acmaUsersOutboundApi.getAllUser(accessToken);
 			if (!CollectionUtils.isEmpty(usersList)) {
+				log.info("Collection is not empty");
 				List<UsersBean> uiUsersList = new ArrayList<>();
 				usersList.stream().forEach(user -> {
 					uiUsersList.add(modelMapper.map(user, UsersBean.class));
@@ -77,6 +79,8 @@ public class UserServiceImpl implements UsersService {
 			if (!CollectionUtils.isEmpty(usersList)) {
 				List<UsersBean> uiUsersList = new ArrayList<>();
 				usersList.stream().forEach(user -> {
+					UsersBean usersBean = modelMapper.map(user, UsersBean.class);
+					log.info("Users Bean is {}",usersBean.toString());
 					uiUsersList.add(modelMapper.map(user, UsersBean.class));
 				});
 				return uiUsersList;

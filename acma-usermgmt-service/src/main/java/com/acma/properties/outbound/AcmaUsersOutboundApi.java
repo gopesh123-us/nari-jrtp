@@ -4,17 +4,22 @@
 package com.acma.properties.outbound;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -68,33 +73,32 @@ public class AcmaUsersOutboundApi {
 
 		try {
 			long start = System.currentTimeMillis();
-//			ResponseEntity<List<Users>> responseEntity = restTemplate.exchange(acma_users_api_url, HttpMethod.GET,
-//					entity, new ParameterizedTypeReference<List<Users>>() {
-//					});
-//			log.info("API Response Code is {}", responseEntity.getStatusCode().value());
-//			if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
-//				List<Users> usersList = responseEntity.getBody();
-//				log.info("Count of the Users {}", usersList.size());
-//				long end = System.currentTimeMillis();
-//				log.info("Total Time taken in millis is "+(end-start));
-//				return Optional.ofNullable(usersList).get();
-//
-//			} else {
-//				throw new RuntimeException("HttpStatusCode " + responseEntity.getStatusCode().value());
-//			}
-
-			ResponseEntity<?> responseEntity = restTemplate.exchange(acma_users_api_url, HttpMethod.GET, httpEntity,
-					Object.class);
+			ResponseEntity<List<Users>> responseEntity = restTemplate.exchange(acma_users_api_url, HttpMethod.GET,
+					httpEntity, new ParameterizedTypeReference<List<Users>>() {});
 			log.info("API Response Code is {}", responseEntity.getStatusCode().value());
 			if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
-				List<Users> usersListResp = (List<Users>) responseEntity.getBody();
-				log.info("Count of the Users {}", usersListResp.size());
+				List<Users> usersList = responseEntity.getBody();
+				log.info("Count of the Users {}", usersList.size());
 				long end = System.currentTimeMillis();
-				log.info("Total Time taken in millis is " + (end - start));
-				return usersListResp;
+				log.info("Total Time taken in millis is "+(end-start));
+				return Optional.ofNullable(usersList).get();
+
 			} else {
 				throw new RuntimeException("HttpStatusCode " + responseEntity.getStatusCode().value());
 			}
+
+			/*
+			 * ResponseEntity<?> responseEntity = restTemplate.exchange(acma_users_api_url,
+			 * HttpMethod.GET, httpEntity, Object.class);
+			 * log.info("API Response Code is {}", responseEntity.getStatusCode().value());
+			 * if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
+			 * List<Users> usersListResp = (List<Users>) responseEntity.getBody();
+			 * log.info("Count of the Users {}", usersListResp.size()); long end =
+			 * System.currentTimeMillis(); log.info("Total Time taken in millis is " + (end
+			 * - start)); return usersListResp; } else { throw new
+			 * RuntimeException("HttpStatusCode " + responseEntity.getStatusCode().value());
+			 * }
+			 */
 
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -117,16 +121,23 @@ public class AcmaUsersOutboundApi {
 		log.info("getAllPropertyOwners {}", acma_groups_api_url);
 		String acmaUsersApi = acma_groups_api_url + "/" + groupId + "/members";
 		log.info("acmaUsersApi {}", acmaUsersApi);
-
+		
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
 		try {
-			ResponseEntity<?> responseEntity = restTemplate.exchange(acmaUsersApi, HttpMethod.GET, httpEntity,
-					Object.class);
+			ResponseEntity<List<Users>> responseEntity = restTemplate.exchange(acmaUsersApi, HttpMethod.GET, httpEntity,
+					new ParameterizedTypeReference<List<Users>>() {});
 			log.info("API Response Code is {}", responseEntity.getStatusCode().value());
 			if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
-				List<Users> usersListResp = (List<Users>) responseEntity.getBody();
+				List<Users> modifiedUsersList = new ArrayList<>();
+				List<Users> usersListResp = responseEntity.getBody();
 				log.info("Count of the Users {}", usersListResp.size());
-				return usersListResp;
+				if(!CollectionUtils.isEmpty(usersListResp)) {
+					usersListResp.stream().forEach(user->{
+						user.setGroupId(groupId);
+						modifiedUsersList.add(user);
+					});
+				}
+				return modifiedUsersList;
 			} else {
 				throw new RuntimeException("HttpStatusCode " + responseEntity.getStatusCode().value());
 			}
@@ -169,7 +180,6 @@ public class AcmaUsersOutboundApi {
 					// provisioning the user to a particular group
 					boolean isGroupProvisioned = provisionUserUnderAGroup(userId, groupId, accessToken);
 					if (isGroupProvisioned) {
-						user.setUserId(userId);
 						user.setGroupId(groupId);
 
 					} else {
@@ -242,7 +252,7 @@ public class AcmaUsersOutboundApi {
 
 		log.info("getUserByUserId:: User Id is {}", userId);
 
-		String usersApi = acma_users_api_url + "/users/" + userId;
+		String usersApi = acma_users_api_url+"/" + userId;
 		log.info("getUserByUserId:: API is {}", usersApi);
 
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
@@ -251,8 +261,9 @@ public class AcmaUsersOutboundApi {
 			ResponseEntity<Users> responseEntity = restTemplate.exchange(usersApi, HttpMethod.GET, httpEntity,
 					Users.class);
 			log.info("getUserByUserId:: Response Code is {}", responseEntity.getStatusCode().value());
-			if (HttpStatus.NO_CONTENT.value() == responseEntity.getStatusCode().value()) {
-				return responseEntity.getBody();
+			if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
+				Users acmaUser = responseEntity.getBody();
+				return acmaUser;
 			} else {
 				throw new RuntimeException("Something went wrong wile user is deprovisioing");
 			}
@@ -265,7 +276,7 @@ public class AcmaUsersOutboundApi {
 		boolean isUserHardDelete = false;
 		log.info("deleteUserByUserId:: User Id is {}", userId);
 
-		String usersApi = acma_users_api_url + "/users/" + userId;
+		String usersApi = acma_users_api_url+"/" + userId;
 		log.info("deleteUserByUserId:: API is {}", usersApi);
 
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);

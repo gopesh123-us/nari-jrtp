@@ -5,16 +5,19 @@ package com.acma.properties.beans;
 
 import java.io.Serializable;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 
  */
-@Setter
-@Getter
-@Builder
+//@Setter
+//@Getter
+//@NoArgsConstructor
+//@AllArgsConstructor
+//@ToString
+@Data
+@NoArgsConstructor
 public class UsersBean implements Serializable {
 
 	/**
@@ -27,14 +30,19 @@ public class UsersBean implements Serializable {
 	private String lastName;
 	private String email;
 	
-	@Builder.Default
+	//@Builder.Default
 	private boolean enabled=false;
 	
-	@Builder.Default
+	//@Builder.Default
 	private boolean emailVerified = false;
 	
-	@Builder.Default
+	//@Builder.Default
 	private boolean totp = false;
+	
+	private String groupId;
+	
+	private String id;
+	
 	
 
 }

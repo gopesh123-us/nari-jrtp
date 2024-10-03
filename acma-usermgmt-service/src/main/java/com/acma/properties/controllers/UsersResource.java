@@ -3,17 +3,18 @@
  */
 package com.acma.properties.controllers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.acma.properties.beans.UsersBean;
@@ -57,36 +58,89 @@ public class UsersResource {
 	}
 	
 	@GetMapping(value = "/users/owners")
-	public ResponseEntity<List<UsersBean>> getAllPropertyOwners(){
-		return null;
+	@Operation(description = "getAllPropertyOwners",security = @SecurityRequirement(name="bearerAuth"))
+	public ResponseEntity<List<UsersBean>> getAllPropertyOwners(String ownerGroupId){
+		log.info("UsersResource::getAllPropertyOwners  "+ownerGroupId);
+		String bearerToken = request.getHeader("Authorization");
+		log.info("bearer token is {}",bearerToken);
+		if(StringUtils.hasText(bearerToken) && (StringUtils.hasText(bearerPrefix))){
+			bearerToken =  StringUtils.replace(bearerToken, bearerPrefix, "");		
+		}
+		log.info("token is {}",bearerToken);
+		List<UsersBean> acmaAgentsList =  usersService.getAllUsersOfAGroup(ownerGroupId, bearerToken);
+		return ResponseEntity.ok(acmaAgentsList);
 	}
 	
 	@GetMapping(value = "/users/agents")
-	public ResponseEntity<List<UsersBean>> getAllAgents(){
-		return null;
+	@Operation(description = "getAllAgents",security = @SecurityRequirement(name="bearerAuth"))
+	public ResponseEntity<List<UsersBean>> getAllAgents(String agentGroupId){
+		log.info("UsersResource::getAllAgents  "+agentGroupId);
+		String bearerToken = request.getHeader("Authorization");
+		log.info("bearer token is {}",bearerToken);
+		if(StringUtils.hasText(bearerToken) && (StringUtils.hasText(bearerPrefix))){
+			bearerToken =  StringUtils.replace(bearerToken, bearerPrefix, "");		
+		}
+		log.info("token is {}",bearerToken);
+		List<UsersBean> acmaAgentsList =  usersService.getAllUsersOfAGroup(agentGroupId, bearerToken);
+		return ResponseEntity.ok(acmaAgentsList);
 	}
 	
 	@GetMapping(value = "/users/brokers")
-	public ResponseEntity<List<UsersBean>> getAllBrokers(){
-		return null;
+	@Operation(description = "getAllBrokers",security = @SecurityRequirement(name="bearerAuth"))
+	public ResponseEntity<List<UsersBean>> getAllBrokers(String brokerGroupId){
+		log.info("UsersResource::getAllBrokers  "+brokerGroupId);
+		String bearerToken = request.getHeader("Authorization");
+		log.info("bearer token is {}",bearerToken);
+		if(StringUtils.hasText(bearerToken) && (StringUtils.hasText(bearerPrefix))){
+			bearerToken =  StringUtils.replace(bearerToken, bearerPrefix, "");		
+		}
+		log.info("token is {}",bearerToken);
+		List<UsersBean> acmaAgentsList =  usersService.getAllUsersOfAGroup(brokerGroupId, bearerToken);
+		return ResponseEntity.ok(acmaAgentsList);
 	}
 	
 	@PostMapping(value = "/users")
-	public ResponseEntity<UsersBean> createUser(){
-		
-		return null;
+	@Operation(description = "createUser",security = @SecurityRequirement(name="bearerAuth"))
+	public ResponseEntity<UsersBean> createUser(@RequestBody UsersBean usersBean){
+		log.info("UsersResource::createUser"+usersBean.toString());
+		String bearerToken = request.getHeader("Authorization");
+		log.info("bearer token is {}",bearerToken);
+		if(StringUtils.hasText(bearerToken) && (StringUtils.hasText(bearerPrefix))){
+			bearerToken =  StringUtils.replace(bearerToken, bearerPrefix, "");		
+		}
+		log.info("token is {}",bearerToken);
+		usersBean = usersService.createUser(usersBean, bearerToken);
+		return new ResponseEntity<UsersBean>(usersBean, HttpStatus.CREATED);
 	}
 	
 	@GetMapping(value = "/users/{userId}")
+	@Operation(description = "getUserById",security = @SecurityRequirement(name="bearerAuth"))
 	public ResponseEntity<UsersBean> getUserById(@PathVariable("userId") String uid){
-		
-		return null;
+		log.info("getUserById::user id , {}", uid);
+		String bearerToken = request.getHeader("Authorization");
+		log.info("bearer token is {}",bearerToken);
+		if(StringUtils.hasText(bearerToken) && (StringUtils.hasText(bearerPrefix))){
+			bearerToken =  StringUtils.replace(bearerToken, bearerPrefix, "");		
+		}
+		log.info("token is {}",bearerToken);
+		UsersBean userBean = usersService.getUserById(uid, bearerToken);
+		return ResponseEntity.ok(userBean);
 	}
 	
 	@DeleteMapping(value = "/users/{userId}")
-	public ResponseEntity<UsersBean> deleteUserById(@PathVariable("userId") String uid){
-		
-		return null;
+	@Operation(description = "deleteUserById",security = @SecurityRequirement(name="bearerAuth"))
+	public ResponseEntity<Object> deleteUserById(@PathVariable("userId") String uid){
+		log.info("getUserById::user id , {}", uid);
+		String bearerToken = request.getHeader("Authorization");
+		log.info("bearer token is {}",bearerToken);
+		if(StringUtils.hasText(bearerToken) && (StringUtils.hasText(bearerPrefix))){
+			bearerToken =  StringUtils.replace(bearerToken, bearerPrefix, "");		
+		}
+		log.info("token is {}",bearerToken);
+		boolean isUserDeleted = usersService.deleteUser(uid, bearerToken);
+		Map<String,String> messagMap = new HashMap<>();
+		messagMap.put("message", "User "+uid+" deleted "+isUserDeleted);
+		return ResponseEntity.ok(messagMap);
 	}
 	
 }
