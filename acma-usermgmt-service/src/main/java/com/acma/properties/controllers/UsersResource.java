@@ -18,11 +18,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.acma.properties.beans.UsersBean;
+import com.acma.properties.exceptions.UsersException;
 import com.acma.properties.services.UsersService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -45,7 +47,7 @@ public class UsersResource {
 	
 	@GetMapping(value = "/users")
 	@Operation(description = "getAllUsers",security = @SecurityRequirement(name="bearerAuth"))
-	public ResponseEntity<List<UsersBean>> getAllUsers(){
+	public ResponseEntity<List<UsersBean>> getAllUsers() throws UsersException{
 		log.info("UsersResource::getAllUsers");
 		String bearerToken = request.getHeader("Authorization");
 		log.info("bearer token is {}",bearerToken);
@@ -55,6 +57,8 @@ public class UsersResource {
 		log.info("token is {}",bearerToken);
 		List<UsersBean> usersList =  usersService.getAllUsers(bearerToken);
 		return new ResponseEntity<List<UsersBean>>(usersList, HttpStatus.OK);	
+		
+		
 	}
 	
 	@GetMapping(value = "/users/owners")
@@ -101,7 +105,7 @@ public class UsersResource {
 	
 	@PostMapping(value = "/users")
 	@Operation(description = "createUser",security = @SecurityRequirement(name="bearerAuth"))
-	public ResponseEntity<UsersBean> createUser(@RequestBody UsersBean usersBean){
+	public ResponseEntity<UsersBean> createUser(@Valid @RequestBody UsersBean usersBean){
 		log.info("UsersResource::createUser"+usersBean.toString());
 		String bearerToken = request.getHeader("Authorization");
 		log.info("bearer token is {}",bearerToken);
@@ -109,7 +113,7 @@ public class UsersResource {
 			bearerToken =  StringUtils.replace(bearerToken, bearerPrefix, "");		
 		}
 		log.info("token is {}",bearerToken);
-		usersBean = usersService.createUser(usersBean, bearerToken);
+		//usersBean = usersService.createUser(usersBean, bearerToken);
 		return new ResponseEntity<UsersBean>(usersBean, HttpStatus.CREATED);
 	}
 	

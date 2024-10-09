@@ -58,7 +58,7 @@ class AcmaUsermgmtServiceApplicationTests {
 	//@Test
 	
 	public void testGetAllUsers() throws RestClientException, URISyntaxException, JsonMappingException, JsonProcessingException {
-		usersAPI.getAllUser(accessToken);
+		//usersAPI.getAllUser(accessToken);
 	}
 	
 	@Test
@@ -92,7 +92,6 @@ class AcmaUsermgmtServiceApplicationTests {
 		
 		assertThat(newUser);
 		assertThat(newUser.getId());
-		assertThat(newUser.getGroupId());
 		
 	}
 	

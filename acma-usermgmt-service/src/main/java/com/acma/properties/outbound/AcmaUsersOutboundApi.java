@@ -24,6 +24,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.acma.properties.exceptions.UsersException;
 import com.acma.properties.models.Users;
 import com.acma.properties.outboundutils.AcmaOutboundUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -64,9 +65,9 @@ public class AcmaUsersOutboundApi {
 	 * @throws URISyntaxException
 	 * @throws JsonMappingException
 	 * @throws JsonProcessingException
+	 * @throws UsersException 
 	 */
-	public List<Users> getAllUser(String accessToken)
-			throws RestClientException, URISyntaxException, JsonMappingException, JsonProcessingException {
+	public List<Users> getAllUser(String accessToken) throws UsersException {
 		log.info("IAM Users API {}", acma_users_api_url);
 
 		HttpEntity httpEntity = AcmaOutboundUtils.getHttpEntity(null, accessToken);
@@ -84,24 +85,13 @@ public class AcmaUsersOutboundApi {
 				return Optional.ofNullable(usersList).get();
 
 			} else {
-				throw new RuntimeException("HttpStatusCode " + responseEntity.getStatusCode().value());
+				throw new UsersException(responseEntity.toString(),responseEntity.getStatusCode().value());
 			}
 
-			/*
-			 * ResponseEntity<?> responseEntity = restTemplate.exchange(acma_users_api_url,
-			 * HttpMethod.GET, httpEntity, Object.class);
-			 * log.info("API Response Code is {}", responseEntity.getStatusCode().value());
-			 * if (HttpStatus.OK.value() == responseEntity.getStatusCode().value()) {
-			 * List<Users> usersListResp = (List<Users>) responseEntity.getBody();
-			 * log.info("Count of the Users {}", usersListResp.size()); long end =
-			 * System.currentTimeMillis(); log.info("Total Time taken in millis is " + (end
-			 * - start)); return usersListResp; } else { throw new
-			 * RuntimeException("HttpStatusCode " + responseEntity.getStatusCode().value());
-			 * }
-			 */
-
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			//e.printStackTrace();
+			log.error("Exception:: "+e.getLocalizedMessage());
+			throw new UsersException(e.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
 		}
 
 	}
@@ -137,7 +127,7 @@ public class AcmaUsersOutboundApi {
 						modifiedUsersList.add(user);
 					});
 				}
-				return modifiedUsersList;
+				return usersListResp;
 			} else {
 				throw new RuntimeException("HttpStatusCode " + responseEntity.getStatusCode().value());
 			}

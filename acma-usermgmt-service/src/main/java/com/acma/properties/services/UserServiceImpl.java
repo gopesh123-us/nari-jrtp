@@ -13,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 
 import com.acma.properties.beans.UsersBean;
+import com.acma.properties.exceptions.UsersException;
 import com.acma.properties.models.Users;
 import com.acma.properties.outbound.AcmaUsersOutboundApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -47,29 +48,58 @@ public class UserServiceImpl implements UsersService {
 		return usersBean;
 	}
 
+//	@Override
+//	public List<UsersBean> getAllUsers(String accessToken) {
+//		try {
+//			List<Users> usersList = acmaUsersOutboundApi.getAllUser(accessToken);
+//			if (!CollectionUtils.isEmpty(usersList)) {
+//				log.info("Collection is not empty");
+//				List<UsersBean> uiUsersList = new ArrayList<>();
+//				usersList.stream().forEach(user -> {
+//					uiUsersList.add(modelMapper.map(user, UsersBean.class));
+//				});
+//				return uiUsersList;
+//			}else {
+//				throw new RuntimeException("No Users Found in the ACMA AD");
+//			}
+//		} catch (JsonMappingException e) {
+//			throw new RuntimeException(e);
+//		} catch (RestClientException e) {
+//			throw new RuntimeException(e);
+//		} catch (JsonProcessingException e) {
+//			throw new RuntimeException(e);
+//		} catch (URISyntaxException e) {
+//			throw new RuntimeException(e);
+//		}
+//	}
+	
+//	@Override
+//	public List<UsersBean> getAllUsers(String accessToken) throws UsersException {
+//		   log.info("UsersService::getAllUsers");
+//			List<Users> usersList = acmaUsersOutboundApi.getAllUser(accessToken);
+//			if (!CollectionUtils.isEmpty(usersList)) {
+//				log.info("Collection is not empty");
+//				List<UsersBean> uiUsersList = new ArrayList<>();
+//				usersList.stream().forEach(user -> {
+//					uiUsersList.add(modelMapper.map(user, UsersBean.class));
+//				});
+//				return uiUsersList;
+//			}else {
+//				throw new RuntimeException("No Users Found in the ACMA AD");
+//			}
+//		
+//	}
+	
 	@Override
-	public List<UsersBean> getAllUsers(String accessToken) {
-		try {
+	public List<UsersBean> getAllUsers(String accessToken) throws UsersException {
+		   log.info("UsersService::getAllUsers");
 			List<Users> usersList = acmaUsersOutboundApi.getAllUser(accessToken);
-			if (!CollectionUtils.isEmpty(usersList)) {
-				log.info("Collection is not empty");
-				List<UsersBean> uiUsersList = new ArrayList<>();
-				usersList.stream().forEach(user -> {
-					uiUsersList.add(modelMapper.map(user, UsersBean.class));
-				});
-				return uiUsersList;
-			}else {
-				throw new RuntimeException("No Users Found in the ACMA AD");
-			}
-		} catch (JsonMappingException e) {
-			throw new RuntimeException(e);
-		} catch (RestClientException e) {
-			throw new RuntimeException(e);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
+			List<UsersBean> uiUsersList = new ArrayList<>();
+			usersList.stream().forEach(user -> {
+				uiUsersList.add(modelMapper.map(user, UsersBean.class));
+			});
+			log.info("UsersService::uiUsersList"+usersList.size());
+			return uiUsersList;
 	}
 
 	@Override
