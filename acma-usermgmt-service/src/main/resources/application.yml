@@ -7,7 +7,7 @@ server:
   
 acma: 
   iam: 
-    usersApi: ${PROTOCOL:http}://${IAM_USERS_API_HOST:localhost}:${IAM_USERS_API_PORT:8081}/admin/realms/${IAM_REALM:acma}/users123
+    usersApi: ${PROTOCOL:http}://${IAM_USERS_API_HOST:localhost}:${IAM_USERS_API_PORT:8081}/admin/realms/${IAM_REALM:acma}/users
     groupsApi: ${PROTOCOL:http}://${IAM_USERS_API_HOST:localhost}:${IAM_USERS_API_PORT:8081}/admin/realms/${IAM_REALM:acma}/groups
     groups: 
      property-owners: ${PROP_OWNERS_GROUP_ID:f955f066-2a7b-4058-bf7f-9b48b43b38b5}
