@@ -1,6 +1,11 @@
 spring: 
   application: 
-          name: acma-authn-authz-service          
+          name: acma-authn-authz-service
+  data:
+    redis:
+      host: ${ACMA_CACHE_HOST:localhost}
+      port: ${ACMA_CACHE_PORT:6379}
+      
   security:
     oauth2:
       client:
@@ -17,7 +22,6 @@ spring:
           keycloak: 
             issuer-uri: http://localhost:8081/realms/acma
             token-uri: http://localhost:8081/realms/acma/protocol/openid-connect/token
-            
   
             
             
