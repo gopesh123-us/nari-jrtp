@@ -12,7 +12,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -20,8 +19,8 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ch.qos.logback.classic.Logger;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,6 +40,9 @@ public class TokenProcessResource {
 	@Autowired
 	private HttpServletResponse response;
 	
+	@Autowired
+	private HttpServletRequest request;
+	
 	@GetMapping("/token")
 	public Map<String, String> generateToken(OAuth2AuthenticationToken authentication){
 		
@@ -52,6 +54,8 @@ public class TokenProcessResource {
 		
 		 String accessToken = authorizedClient.getAccessToken().getTokenValue();
 		 log.info("access Token "+accessToken);
+		 
+		
 		 
 		 OidcUser user = (OidcUser)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		 log.info("id Token "+user.getIdToken().getTokenValue());
@@ -67,12 +71,19 @@ public class TokenProcessResource {
 		 log.info("json Object is "+jsonObject.toString());
 		 
 		 acmaCacheServer.opsForHash().put(subjectId, subjectId, accessToken);
+		 acmaCacheServer.opsForHash().put(accessToken, accessToken, subjectId);
+		 
+		 String hostname = request.getServerName();
+		 log.info("host name is "+hostname);
+		 
+		 String contextPath = request.getContextPath();
+		 log.info("context path is "+contextPath);
 		 
 		 //response.addHeader("AcmaCk", jsonObject.toString());
 		 Cookie cookie = new Cookie("AcmaCk", Base64.getEncoder().encodeToString(jsonObject.toString().getBytes()));
-		 cookie.setPath("/");
+		 cookie.setPath(contextPath);
 		 cookie.setMaxAge(authorizedClient.getAccessToken().getExpiresAt().getNano());
-		 cookie.setDomain("localhost");
+		 cookie.setDomain(hostname);
 		 
 		 response.addCookie(cookie);
 		 try {
@@ -86,4 +97,5 @@ public class TokenProcessResource {
 		
 		return usersMap;
 	}
+		
 }
