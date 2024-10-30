@@ -22,7 +22,21 @@ spring:
           keycloak: 
             issuer-uri: http://localhost:8081/realms/acma
             token-uri: http://localhost:8081/realms/acma/protocol/openid-connect/token
-  
+
+eureka:
+  client:
+    service-url: 
+      default-zone: http://${ACMA_REGISTRY_HOST:localhost}:${ACMA_REGISTRY_PORT:8761}/eureka/
+  instance:
+    hostname: ${ACMA_AUTHNZ_REGISTRY_HOST:localhost}
+    #prefer-ip-address: true  
+        
+management:
+  endpoints:
+    web:
+      exposure:
+        exclude: "*"
+        
             
             
 server:
