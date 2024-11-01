@@ -11,3 +11,17 @@ acma:
     groupsApi: ${PROTOCOL:http}://${IAM_USERS_API_HOST:localhost}:${IAM_USERS_API_PORT:8081}/admin/realms/${IAM_REALM:acma}/groups
     groups: 
      property-owners: ${PROP_OWNERS_GROUP_ID:f955f066-2a7b-4058-bf7f-9b48b43b38b5}
+     
+eureka:
+  client:
+    service-url: 
+      default-zone: http://${ACMA_REGISTRY_HOST:localhost}:${ACMA_REGISTRY_PORT:8761}/eureka/
+  instance:
+    hostname: ${ACMA_USERMGMT_REGISTRY_HOST:localhost}
+    #prefer-ip-address: true  
+        
+management:
+  endpoints:
+    web:
+      exposure:
+        exclude: "*"
