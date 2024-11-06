@@ -1,0 +1,25 @@
+spring: 
+  application: 
+           name: acma-registry-server
+           
+
+
+server:
+  port: ${DISCOVERY_PORT:8761}
+  
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: false
+  instance:
+    hostname: ${DISCOVERY_HOST:localhost}
+    #prefer-ip-address: true
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        
+
+        
